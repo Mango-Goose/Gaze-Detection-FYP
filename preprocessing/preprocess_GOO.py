@@ -1,6 +1,7 @@
 import os
 import json
 import re
+import io
 import pandas as pd
 from PIL import Image
 import argparse
@@ -9,6 +10,7 @@ from datasets import load_dataset
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--data_path", type=str, default="../GOO_Dataset/data")
+parser.add_argument("--img_path", type=str, default="../GOO_Dataset/images")
 args = parser.parse_args()
 
 #Pitch, Yaw and Roll are rotation angles (roll ear to shoulder, yaw shake head no, pitch nod yes) 
@@ -16,9 +18,11 @@ args = parser.parse_args()
 #JSON only really needs to contain the head bbox and gaze target coordinates (including inout), as well as the path to the image.
 
 
-def main(DATA_PATH):
-    #TEST
+def main(DATA_PATH, IMG_PATH):
+    
+    #make directory for images to get path
 
+    #TEST
     #check if dataset downloaded, if not stream it from huggingface
     if len(os.listdir(DATA_PATH)) == 0:
         dataset = load_dataset("markytools/goosyntheticv3", split="test", streaming=True)  #issue with this - creates an iterable dataset not a dataset - doesnt act the same.
@@ -34,8 +38,11 @@ def main(DATA_PATH):
 
         #get file location
         img = dataset['image'][i]
-        filename = img.filename
-        location = os.path.join(DATA_PATH, filename)
+        path = os.path.join(IMG_PATH, "test")
+        img.save(os.path.join(path, f"{i}.png"))
+
+        # Store path relative to GOO_Dataset/data/ for proper joining in dataloader
+        location = os.path.relpath(os.path.join(path, f"{i}.png"), DATA_PATH)
         width, height = img.size
 
         #get head bbox
@@ -60,10 +67,10 @@ def main(DATA_PATH):
             'bbox': [xmin, ymin, xmax, ymax],
             'bbox_norm' : [xmin / float(width), ymin / float(height), xmax / float(width), ymax / float(height)],
             'inout' : 1, #find out which one means in-frame and set it for all - there is not a label for this in GOO
-            'gazex' : dataset['gaze_cx'][i],
-            'gazey' : dataset['gaze_cy'][i],
-            'gazex_norm' : dataset['gaze_cx'][i],
-            'gazey_norm' : dataset['gaze_cy'][i],
+            'gazex' : [dataset['gaze_cx'][i]],
+            'gazey' : [dataset['gaze_cy'][i]],
+            'gazex_norm' : [dataset['gaze_cx'][i] / float(width)],
+            'gazey_norm' : [dataset['gaze_cy'][i] / float(height)],
             'head_id' : 1, #need to change this to 1 - only one head per image in GOO.
         
         })
@@ -95,8 +102,11 @@ def main(DATA_PATH):
 
         #get file location
         img = dataset['image'][i]
-        filename = img.filename
-        location = os.path.join(DATA_PATH, filename)
+        path = os.path.join(IMG_PATH, "train")
+        img.save(os.path.join(path, f"{i}.png"))
+
+        # Store path relative to GOO_Dataset/data/ for proper joining in dataloader
+        location = os.path.relpath(os.path.join(path, f"{i}.png"), DATA_PATH)
         width, height = img.size
 
         #get head bbox
@@ -121,10 +131,10 @@ def main(DATA_PATH):
             'bbox': [xmin, ymin, xmax, ymax],
             'bbox_norm' : [xmin / float(width), ymin / float(height), xmax / float(width), ymax / float(height)],
             'inout' : 1, #find out which one means in-frame and set it for all - there is not a label for this in GOO
-            'gazex' : dataset['gaze_cx'][i],
-            'gazey' : dataset['gaze_cy'][i],
-            'gazex_norm' : dataset['gaze_cx'][i],
-            'gazey_norm' : dataset['gaze_cy'][i],
+            'gazex' : [dataset['gaze_cx'][i]],
+            'gazey' : [dataset['gaze_cy'][i]],
+            'gazex_norm' : [dataset['gaze_cx'][i] / float(width)],
+            'gazey_norm' : [dataset['gaze_cy'][i] / float(height)],
             'head_id' : 1, #need to change this to 1 - only one head per image in GOO.
         
         })
@@ -142,4 +152,4 @@ def main(DATA_PATH):
 
 
 if __name__ == "__main__":
-    main(args.data_path)
+    main(args.data_path, args.img_path)
