@@ -55,6 +55,16 @@ def main(DATA_PATH, IMG_PATH):
         bboxes = bboxes.remove(bboxes[l_idx]) 
         labels = labels.remove('25')
         
+        if dataset['gazeIdx'][i] == -1 or dataset['gaze_cx'][i] == -1 or dataset['gaze_cy'][i] == -1:
+            inout = 0
+            if dataset['gaze_cx'][i] == -1:
+                gazex = 0
+                gazey = 0
+        else:
+            inout = 1
+            gazex = dataset['gaze_cx'][i]
+            gazey = dataset['gaze_cy'][i]
+
         #xmin, xmax, ymin, ymax etc
         xmin, ymin, xmax, ymax = head_bbox[1:-1].split(", ")
         xmin = float(xmin)
@@ -62,15 +72,17 @@ def main(DATA_PATH, IMG_PATH):
         xmax = float(xmax)
         ymax = float(ymax)
 
+        #checking if gaze is in or out of frame
+
         heads = []
         heads.append({
             'bbox': [xmin, ymin, xmax, ymax],
             'bbox_norm' : [xmin / float(width), ymin / float(height), xmax / float(width), ymax / float(height)],
-            'inout' : 1, #find out which one means in-frame and set it for all - there is not a label for this in GOO
-            'gazex' : [dataset['gaze_cx'][i]],
-            'gazey' : [dataset['gaze_cy'][i]],
-            'gazex_norm' : [dataset['gaze_cx'][i] / float(width)],
-            'gazey_norm' : [dataset['gaze_cy'][i] / float(height)],
+            'inout' : inout, #find out which one means in-frame and set it for all - there is not a label for this in GOO
+            'gazex' : [gazex],
+            'gazey' : [gazey],
+            'gazex_norm' : [gazex / float(width)],
+            'gazey_norm' : [gazey / float(height)],
             'head_id' : 1, #need to change this to 1 - only one head per image in GOO.
         
         })
@@ -119,6 +131,16 @@ def main(DATA_PATH, IMG_PATH):
         bboxes = bboxes.remove(bboxes[l_idx]) 
         labels = labels.remove('25')
         
+        if dataset['gazeIdx'][i] == -1 or dataset['gaze_cx'][i] == -1 or dataset['gaze_cy'][i] == -1:
+            inout = 0
+            if dataset['gaze_cx'][i] == -1:
+                gazex = 0
+                gazey = 0
+        else:
+            inout = 1
+            gazex = dataset['gaze_cx'][i]
+            gazey = dataset['gaze_cy'][i]
+
         #xmin, xmax, ymin, ymax etc
         xmin, ymin, xmax, ymax = head_bbox[1:-1].split(", ")
         xmin = float(xmin)
@@ -130,13 +152,12 @@ def main(DATA_PATH, IMG_PATH):
         heads.append({
             'bbox': [xmin, ymin, xmax, ymax],
             'bbox_norm' : [xmin / float(width), ymin / float(height), xmax / float(width), ymax / float(height)],
-            'inout' : 1, #find out which one means in-frame and set it for all - there is not a label for this in GOO
-            'gazex' : [dataset['gaze_cx'][i]],
-            'gazey' : [dataset['gaze_cy'][i]],
-            'gazex_norm' : [dataset['gaze_cx'][i] / float(width)],
-            'gazey_norm' : [dataset['gaze_cy'][i] / float(height)],
+            'inout' : inout, #find out which one means in-frame and set it for all - there is not a label for this in GOO
+            'gazex' : [gazex],
+            'gazey' : [gazey],
+            'gazex_norm' : [gazex / float(width)],
+            'gazey_norm' : [gazey / float(height)],
             'head_id' : 1, #need to change this to 1 - only one head per image in GOO.
-        
         })
         TRAIN_FRAMES.append({
             'path' : location,
