@@ -24,12 +24,9 @@ def main(DATA_PATH, IMG_PATH):
 
     #TEST
     #check if dataset downloaded, if not stream it from huggingface
-    if len(os.listdir(DATA_PATH)) == 0:
-        dataset = load_dataset("markytools/goosyntheticv3", split="test", streaming=True)  #issue with this - creates an iterable dataset not a dataset - doesnt act the same.
-        print("streaming dataset from huggingface, dataset: ", next(iter(dataset)) )
-    else:
-        dataset= load_dataset(DATA_PATH, split="test")
-        print("loading dataset from local path")
+    
+    dataset= load_dataset(DATA_PATH, split="test")
+    print("loading dataset from local path")
 
     #need to differentiate between person bounding boxes and product bounding boxes - label of 25
     TEST_FRAMES = []

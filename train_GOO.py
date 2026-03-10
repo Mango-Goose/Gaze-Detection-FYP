@@ -28,7 +28,7 @@ parser.add_argument('--max_epochs', type=int, default=15)
 #determines the number of training records used in one forward and backward pass of the nn 
 parser.add_argument('--batch_size', type=int, default=60)
 parser.add_argument('--lr', type=float, default=1e-3)
-parser.add_argument('--n_workers', type=int, default=8)
+parser.add_argument('--n_workers', type=int, default=3)
 args = parser.parse_args()
 
 #code referenced from GazeLLE, specifically the GazeFollow training loop.
@@ -42,11 +42,13 @@ def main():
     model, transform = get_gazelle_model(args.model)
 
     #check to see if cuda available, if not use cpu
-    if torch.cuda.is_available():
-        model.cuda()
-    else:
-        print("CUDA not available, using CPU")
-        model.cpu()
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    #if torch.cuda.is_available():
+        #model.cuda()
+        #print("Using CUDA for training")
+    #else:
+        #print("CUDA not available, using CPU")
+        #model.cpu()
     
     for param in model.backbone.parameters(): # freeze backbone
         param.requires_grad = False
@@ -54,9 +56,9 @@ def main():
 
     #utilises PyTorch Dataloaders
     train_dataset = GazeDataset('GOO', args.data_path, 'train', transform)
-    train_dl = torch.utils.data.DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, collate_fn=collate_fn, num_workers=0)
+    train_dl = torch.utils.data.DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, collate_fn=collate_fn, num_workers=args.n_workers)
     eval_dataset = GazeDataset('GOO', args.data_path, 'test', transform)
-    eval_dl = torch.utils.data.DataLoader(eval_dataset, batch_size=args.batch_size, shuffle=False, collate_fn=collate_fn, num_workers=0)
+    eval_dl = torch.utils.data.DataLoader(eval_dataset, batch_size=args.batch_size, shuffle=False, collate_fn=collate_fn, num_workers=args.n_workers)
 
     #loss - start with using BCE as its what GazeLLE uses but can also try change it up and see if other functions are better
     loss_fn = nn.BCELoss()
@@ -78,10 +80,10 @@ def main():
 
             optimizer.zero_grad()
 
-            preds = model({"images": imgs.cpu(), "bboxes": [[bbox] for bbox in bboxes]})
+            preds = model({"images": imgs.to(device), "bboxes": [[bbox] for bbox in bboxes]})
             heatmap_preds = torch.stack(preds['heatmap']).squeeze(dim=1)
 
-            loss = loss_fn(heatmap_preds, heatmaps.cpu())
+            loss = loss_fn(heatmap_preds, heatmaps.to(device))
             loss.backward()
             optimizer.step()
 
@@ -106,7 +108,7 @@ def main():
             imgs, bboxes, gazex, gazey, inout, heights, widths = batch
 
             with torch.no_grad():
-                preds = model({"images": imgs.cpu(), "bboxes": [[bbox] for bbox in bboxes]})
+                preds = model({"images": imgs.to(device), "bboxes": [[bbox] for bbox in bboxes]})
 
             heatmap_preds = torch.stack(preds["heatmap"]).squeeze(dim=1)
             for i in range(heatmap_preds.shape[0]):

@@ -9,7 +9,7 @@ from datasets import load_dataset
 parser = argparse.ArgumentParser()
 parser.add_argument("--data_path", type=str, default="./GOO_Dataset/data")
 parser.add_argument("--img_path", type=str, default="./GOO_Dataset/images/train")
-parser.add_argument("--image_num", type=str, default="0")
+parser.add_argument("--image_num", type=str, default="450")
 args = parser.parse_args()
 
 

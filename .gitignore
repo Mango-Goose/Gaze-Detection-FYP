@@ -182,5 +182,5 @@ cython_debug/
 
 gazefollow_extended/
 GOO_Dataset/
-gazelle/
+# gazelle/
 experiments/
