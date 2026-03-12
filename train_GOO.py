@@ -43,12 +43,7 @@ def main():
 
     #check to see if cuda available, if not use cpu
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    #if torch.cuda.is_available():
-        #model.cuda()
-        #print("Using CUDA for training")
-    #else:
-        #print("CUDA not available, using CPU")
-        #model.cpu()
+    model.to(device)
     
     for param in model.backbone.parameters(): # freeze backbone
         param.requires_grad = False
