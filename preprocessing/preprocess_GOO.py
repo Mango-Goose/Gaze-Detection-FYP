@@ -19,11 +19,8 @@ args = parser.parse_args()
 
 
 def main(DATA_PATH, IMG_PATH):
-    
-    #make directory for images to get path
 
     #TEST
-    #check if dataset downloaded, if not stream it from huggingface
     
     dataset= load_dataset("markytools/goosyntheticv3", split="test")
     print("loading dataset from local path")
@@ -31,10 +28,10 @@ def main(DATA_PATH, IMG_PATH):
     #need to differentiate between person bounding boxes and product bounding boxes - label of 25
     TEST_FRAMES = []
 
-    for i in range(dataset.num_rows):
+    for i, row in enumerate(dataset):
 
         #get file location
-        img = dataset['image'][i]
+        img = row['image']
         path = os.path.join(IMG_PATH, "test")
         img.save(os.path.join(path, f"{i}.png"))
 
@@ -43,24 +40,21 @@ def main(DATA_PATH, IMG_PATH):
         width, height = img.size
 
         #get head bbox
-        bboxes = re.findall(r"\[(.*?)\]", dataset['bboxes'][i][1:-1])
-        labels = dataset['labels'][i][1:-1].split(", ") #getting both bboxes and labels as lists
+        bboxes = re.findall(r"\[(.*?)\]", row['bboxes'][1:-1])
+        labels = row['labels'][1:-1].split(", ") #getting both bboxes and labels as lists
 
         l_idx = labels.index('25') 
         head_bbox = bboxes[l_idx]  
         
-        bboxes = bboxes.remove(bboxes[l_idx]) 
-        labels = labels.remove('25')
-        
-        if dataset['gazeIdx'][i] == -1 or dataset['gaze_cx'][i] == -1 or dataset['gaze_cy'][i] == -1:
+        if row['gazeIdx'] == -1 or row['gaze_cx'] == -1 or row['gaze_cy'] == -1:
             inout = 0
-            if dataset['gaze_cx'][i] == -1:
+            if row['gaze_cx'] == -1:
                 gazex = 0
                 gazey = 0
         else:
             inout = 1
-            gazex = dataset['gaze_cx'][i]
-            gazey = dataset['gaze_cy'][i]
+            gazex = row['gaze_cx']
+            gazey = row['gaze_cy']
 
         #xmin, xmax, ymin, ymax etc
         xmin, ymin, xmax, ymax = head_bbox[1:-1].split(", ")
@@ -102,10 +96,10 @@ def main(DATA_PATH, IMG_PATH):
     #need to differentiate between person bounding boxes and product bounding boxes - label of 25
     TRAIN_FRAMES = []
 
-    for i in range(dataset.num_rows):
+    for i, row in enumerate(dataset):
 
         #get file location
-        img = dataset['image'][i]
+        img = row['image']
         path = os.path.join(IMG_PATH, "train")
         img.save(os.path.join(path, f"{i}.png"))
 
@@ -114,24 +108,21 @@ def main(DATA_PATH, IMG_PATH):
         width, height = img.size
 
         #get head bbox
-        bboxes = re.findall(r"\[(.*?)\]", dataset['bboxes'][i][1:-1])
-        labels = dataset['labels'][i][1:-1].split(", ") #getting both bboxes and labels as lists
+        bboxes = re.findall(r"\[(.*?)\]", row['bboxes'][1:-1])
+        labels = row['labels'][1:-1].split(", ") #getting both bboxes and labels as lists
 
         l_idx = labels.index('25') 
         head_bbox = bboxes[l_idx]  
         
-        bboxes = bboxes.remove(bboxes[l_idx]) 
-        labels = labels.remove('25')
-        
-        if dataset['gazeIdx'][i] == -1 or dataset['gaze_cx'][i] == -1 or dataset['gaze_cy'][i] == -1:
+        if row['gazeIdx'] == -1 or row['gaze_cx'] == -1 or row['gaze_cy'] == -1:
             inout = 0
-            if dataset['gaze_cx'][i] == -1:
+            if row['gaze_cx'] == -1:
                 gazex = 0
                 gazey = 0
         else:
             inout = 1
-            gazex = dataset['gaze_cx'][i]
-            gazey = dataset['gaze_cy'][i]
+            gazex = row['gaze_cx']
+            gazey = row['gaze_cy']
 
         #xmin, xmax, ymin, ymax etc
         xmin, ymin, xmax, ymax = head_bbox[1:-1].split(", ")
