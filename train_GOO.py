@@ -21,11 +21,9 @@ parser.add_argument('--model', type=str, default="gazelle_dinov2_vitb14")
 parser.add_argument('--data_path', type=str, default="./GOO_Dataset/data")
 parser.add_argument('--dataset', type=str, default='GOO')
 parser.add_argument('--ckpt_save_dir', type=str, default='./experiments')
-#parser.add_argument('--wandb_project', type=str, default='gazelle')
 parser.add_argument('--exp_name', type=str, default='train_GOO')
 parser.add_argument('--log_iter', type=int, default=10, help='how often to log loss during training')
 parser.add_argument('--max_epochs', type=int, default=15)
-#determines the number of training records used in one forward and backward pass of the nn 
 parser.add_argument('--batch_size', type=int, default=60)
 parser.add_argument('--lr', type=float, default=1e-3)
 parser.add_argument('--n_workers', type=int, default=3)
@@ -82,8 +80,8 @@ def main():
             loss.backward()
             optimizer.step()
 
-            if cur_iter % args.log_iter == 0:
-                print("TRAIN EPOCH {}, iter {}/{}, loss={}".format(epoch, cur_iter, len(train_dl), round(loss.item(), 4)))
+            #if cur_iter % args.log_iter == 0:
+                #print("TRAIN EPOCH {}, iter {}/{}, loss={}".format(epoch, cur_iter, len(train_dl), round(loss.item(), 4)))
             
         scheduler.step()
 
