@@ -79,6 +79,9 @@ def main():
             loss = loss_fn(heatmap_preds, heatmaps.to(device))
             loss.backward()
             optimizer.step()
+
+            #if cur_iter % args.log_iter == 0:
+                #print("TRAIN EPOCH {}, iter {}/{}, loss={}".format(epoch, cur_iter, len(train_dl), round(loss.item(), 4)))
             
         scheduler.step()
 
