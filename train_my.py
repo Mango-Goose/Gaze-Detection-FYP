@@ -18,11 +18,11 @@ parser = argparse.ArgumentParser()
 
 
 parser.add_argument('--model', type=str, default="gazelle_dinov2_vitb14")
-parser.add_argument('--data_path', type=str, default="./GOO_Dataset/data")
-parser.add_argument('--dataset', type=str, default='GOO')
+parser.add_argument('--data_path', type=str, default="./screenshots")
+parser.add_argument('--dataset', type=str, default='my')
 parser.add_argument('--ckpt_save_dir', type=str, default='./experiments')
-parser.add_argument('--exp_name', type=str, default='train_GOO')
-parser.add_argument('--log_iter', type=int, default=10, help='how often to log loss during training')
+parser.add_argument('--exp_name', type=str, default='train_my')
+parser.add_argument('--log_iter', type=int, default=1, help='how often to log loss during training')
 parser.add_argument('--max_epochs', type=int, default=15)
 parser.add_argument('--batch_size', type=int, default=60)
 parser.add_argument('--lr', type=float, default=1e-3)
@@ -48,10 +48,10 @@ def main():
     print(f"Learnable parameters: {sum(p.numel() for p in model.parameters() if p.requires_grad)}")
 
     #utilises PyTorch Dataloaders
-    train_dataset = GazeDataset('GOO', args.data_path, 'train', transform)
+    train_dataset = GazeDataset('my', args.data_path, 'train', transform)
     train_dl = torch.utils.data.DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, collate_fn=collate_fn, num_workers=args.n_workers)
-    eval_dataset = GazeDataset('GOO', args.data_path, 'test', transform)
-    eval_dl = torch.utils.data.DataLoader(eval_dataset, batch_size=args.batch_size, shuffle=False, collate_fn=collate_fn, num_workers=args.n_workers)
+    #eval_dataset = GazeDataset('my', args.data_path, 'test', transform)
+    #eval_dl = torch.utils.data.DataLoader(eval_dataset, batch_size=args.batch_size, shuffle=False, collate_fn=collate_fn, num_workers=args.n_workers)
 
     #loss - start with using BCE as its what GazeLLE uses but can also try change it up and see if other functions are better
     loss_fn = nn.BCELoss()
@@ -80,8 +80,8 @@ def main():
             loss.backward()
             optimizer.step()
 
-            #if cur_iter % args.log_iter == 0:
-                #print("TRAIN EPOCH {}, iter {}/{}, loss={}".format(epoch, cur_iter, len(train_dl), round(loss.item(), 4)))
+            if cur_iter % args.log_iter == 0:
+                print("TRAIN EPOCH {}, iter {}/{}, loss={}".format(epoch, cur_iter, len(train_dl), round(loss.item(), 4)))
             
         scheduler.step()
 
@@ -97,34 +97,7 @@ def main():
         min_l2s = []
         aucs = []
 
-        for cur_iter, batch in enumerate(eval_dl):
-            imgs, bboxes, gazex, gazey, inout, heights, widths = batch
-
-            with torch.no_grad():
-                preds = model({"images": imgs.to(device), "bboxes": [[bbox] for bbox in bboxes]})
-
-            heatmap_preds = torch.stack(preds["heatmap"]).squeeze(dim=1)
-            for i in range(heatmap_preds.shape[0]):
-                
-                auc = gazefollow_auc(heatmap_preds[i], gazex[i], gazey[i], heights[i], widths[i])
-                avg_l2, min_l2 = gazefollow_l2(heatmap_preds[i], gazex[i], gazey[i])
-                aucs.append(auc)
-                avg_l2s.append(avg_l2)
-                min_l2s.append(min_l2)
-
-        #average metrics
-        epoch_avg_l2 = np.mean(avg_l2s)
-        epoch_min_l2 = np.mean(min_l2s)
-        epoch_auc = np.mean(aucs)
-
-        #print
-        print("EVAL EPOCH {}: AUC={}, Min L2={}, Avg L2={}".format(epoch, round(epoch_auc, 4), round(epoch_min_l2, 4), round(epoch_avg_l2, 4)))
-
-        if epoch_min_l2 < best_min_l2:
-            best_min_l2 = epoch_min_l2
-            best_epoch = epoch
-
-    print("Completed training. Best Min L2 of {} obtained at epoch {}".format(round(best_min_l2, 4), best_epoch))
+    print("Completed training")
 
 if __name__ == "__main__":
     random.seed(0)
