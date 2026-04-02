@@ -23,7 +23,7 @@ def main(DATA_PATH, IMG_PATH):
         gazex = float(gaze[0])
         gazey = float(gaze[1])
 
-        if gazex == -1 or gazey == -1:
+        if gazex == -1 or gazey == -1 or row['occluded'] == True:
             inout = 0
         else:
             inout = 1
