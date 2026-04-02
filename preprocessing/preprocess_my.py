@@ -4,8 +4,8 @@ from PIL import Image
 import argparse
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--data_path", type=str, default="../Dataset")
-parser.add_argument("--img_path", type=str, default="../Dataset/images")
+parser.add_argument("--data_path", type=str, default="../Gaze-Dataset")
+parser.add_argument("--img_path", type=str, default="../Gaze-Dataset/images")
 args = parser.parse_args()
 
 def main(DATA_PATH, IMG_PATH):
