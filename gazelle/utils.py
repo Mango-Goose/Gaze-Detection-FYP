@@ -6,6 +6,9 @@ import torchvision
 import random
 from sklearn.metrics import roc_auc_score
 
+import requests
+from transformers import AutoImageProcessor, AutoModelForDepthEstimation
+
 def repeat_tensors(tensor, repeat_counts):
     repeated_tensors = [tensor[i:i+1].repeat(repeat, *[1] * (tensor.ndim - 1)) for i, repeat in enumerate(repeat_counts)]
     return torch.cat(repeated_tensors, dim=0)
@@ -95,6 +98,16 @@ def get_heatmap(gazex, gazey, height, width, sigma=3, htype="Gaussian"):
         return img
     gazex = int(gazex * width)
     gazey = int(gazey * height)
+
+    #Create depth map
+    image_processor = AutoImageProcessor.from_pretrained("depth-anything/Depth-Anything-V2-Small-hf")
+    model = AutoModelForDepthEstimation.from_pretrained("depth-anything/Depth-Anything-V2-Small-hf")
+
+    inputs = image_processor(images=img, return_tensors="pt")
+    with torch.no_grad():
+        outputs = model(**inputs)
+        depth_map = outputs.predicted_depth.squeeze().cpu().numpy()
+
 
     # Check that any part of the gaussian is in-bounds
     ul = [int(gazex - 3 * sigma), int(gazey - 3 * sigma)]

@@ -7,9 +7,9 @@ import requests
 from transformers import AutoImageProcessor, AutoModelForDepthEstimation
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--data_path', type=str, default="./GOO_Dataset/images/test/")
-parser.add_argument('--image_num', type=str, default="6")
-parser.add_argument('--output_path', type=str, default="./depth_maps/depth_output_anything_1.png")
+parser.add_argument('--data_path', type=str, default="./Dataset2.0/images/")
+parser.add_argument('--image_num', type=str, default="19")
+parser.add_argument('--output_path', type=str, default="./depth_maps/depth_output_anything_2.png")
 args = parser.parse_args()
 
 
