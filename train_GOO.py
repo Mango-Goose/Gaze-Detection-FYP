@@ -22,7 +22,7 @@ parser.add_argument('--data_path', type=str, default="./GOO_Dataset/data")
 parser.add_argument('--dataset', type=str, default='GOO')
 parser.add_argument('--ckpt_save_dir', type=str, default='./experiments')
 parser.add_argument('--exp_name', type=str, default='train_GOO')
-parser.add_argument('--log_iter', type=int, default=10, help='how often to log loss during training')
+parser.add_argument('--log_iter', type=int, default=1, help='how often to log loss during training')
 parser.add_argument('--max_epochs', type=int, default=15)
 parser.add_argument('--batch_size', type=int, default=60)
 parser.add_argument('--lr', type=float, default=1e-3)
@@ -54,7 +54,7 @@ def main():
     eval_dl = torch.utils.data.DataLoader(eval_dataset, batch_size=args.batch_size, shuffle=False, collate_fn=collate_fn, num_workers=args.n_workers)
 
     #loss - start with using BCE as its what GazeLLE uses but can also try change it up and see if other functions are better
-    loss_fn = nn.BCELoss()
+    loss_fn = nn.MSELoss()
 
     #gradient descent
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
@@ -80,8 +80,8 @@ def main():
             loss.backward()
             optimizer.step()
 
-            #if cur_iter % args.log_iter == 0:
-                #print("TRAIN EPOCH {}, iter {}/{}, loss={}".format(epoch, cur_iter, len(train_dl), round(loss.item(), 4)))
+            if cur_iter % args.log_iter == 0:
+                print("TRAIN EPOCH {}, iter {}/{}, loss={}".format(epoch, cur_iter, len(train_dl), round(loss.item(), 4)))
             
         scheduler.step()
 
