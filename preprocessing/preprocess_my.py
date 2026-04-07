@@ -34,6 +34,7 @@ def main(DATA_PATH, IMG_PATH):
         xmax = float(xmax)
         ymax = float(ymax)
 
+        gazey = 480 - gazey
         heads = []
         heads.append({
             'bbox': [xmin, ymin, xmax, ymax],
