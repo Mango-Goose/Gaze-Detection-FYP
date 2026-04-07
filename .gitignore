@@ -185,10 +185,7 @@ GOO_Dataset/
 # gazelle/
 experiments/
 venv312/
-<<<<<<< Updated upstream
-Depth-Anything-3/
-=======
 Depth-Anything-3/
 Gaze-Dataset/
 Dataset2.0/
->>>>>>> Stashed changes
+models/

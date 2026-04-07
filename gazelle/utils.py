@@ -3,11 +3,14 @@ from PIL import Image, ImageDraw
 import numpy as np
 import matplotlib.pyplot as plt
 import torchvision
+import torchvision.transforms as transforms
 import random
 from sklearn.metrics import roc_auc_score
 
-import requests
-from transformers import AutoImageProcessor, AutoModelForDepthEstimation
+from depth_anything_3.api import DepthAnything3
+
+#import requests
+#from transformers import AutoImageProcessor, AutoModelForDepthEstimation
 
 def repeat_tensors(tensor, repeat_counts):
     repeated_tensors = [tensor[i:i+1].repeat(repeat, *[1] * (tensor.ndim - 1)) for i, repeat in enumerate(repeat_counts)]
@@ -90,7 +93,7 @@ def random_bbox_jitter(img, bbox):
 
     return bbox
 
-def get_heatmap(gazex, gazey, height, width, sigma=3, htype="Gaussian"):
+def get_heatmap(gazeimg, gazex, gazey, height, width, sigma=3, htype="Gaussian", model=None):
     # Adapted from https://github.com/ejcgt/attention-target-detection/blob/master/utils/imutils.py
 
     img = torch.zeros(height, width)
@@ -99,15 +102,17 @@ def get_heatmap(gazex, gazey, height, width, sigma=3, htype="Gaussian"):
     gazex = int(gazex * width)
     gazey = int(gazey * height)
 
-    #Create depth map
-    image_processor = AutoImageProcessor.from_pretrained("depth-anything/Depth-Anything-V2-Small-hf")
-    model = AutoModelForDepthEstimation.from_pretrained("depth-anything/Depth-Anything-V2-Small-hf")
-
-    inputs = image_processor(images=img, return_tensors="pt")
-    with torch.no_grad():
-        outputs = model(**inputs)
-        depth_map = outputs.predicted_depth.squeeze().cpu().numpy()
-
+    #Create depth map using Depth-Anything-3
+    results = model.inference([gazeimg])
+    depth = results.depth
+    
+    #resize depth map to be the same as the heatmap
+    depth_tensor = torch.tensor(depth)
+    if depth_tensor.ndim == 3:
+        depth_tensor = depth_tensor.unsqueeze(1)
+    elif depth_tensor.ndim == 2:
+        depth_tensor = depth_tensor.unsqueeze(0).unsqueeze(0)
+    resized_depth_map = torch.nn.functional.interpolate(depth_tensor, (64, 64), mode='bilinear', align_corners=False).squeeze().numpy()
 
     # Check that any part of the gaussian is in-bounds
     ul = [int(gazex - 3 * sigma), int(gazey - 3 * sigma)]
@@ -135,7 +140,10 @@ def get_heatmap(gazex, gazey, height, width, sigma=3, htype="Gaussian"):
     img_y = max(0, ul[1]), min(br[1], img.shape[0])
 
     img[img_y[0] : img_y[1], img_x[0] : img_x[1]] += g[g_y[0] : g_y[1], g_x[0] : g_x[1]]
+    #resized_depth_map = 255 - resized_depth_map
+    img = img * resized_depth_map  #Multiply heatmap by depth map to get depth-aware heatmap
     img = img / img.max()  # normalize heatmap so it has max value of 1
+
     return img
 
 # GazeFollow calculates AUC using original image size with GT (x,y) coordinates set to 1 and everything else as 0
