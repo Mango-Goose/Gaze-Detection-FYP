@@ -1,6 +1,7 @@
 import argparse
 import numpy as np
 import os
+os.environ["XFORMERS_DISABLED"] = "1"
 import sys
 import random
 from datetime import datetime
@@ -24,7 +25,7 @@ parser.add_argument('--data_path', type=str, default="./GOO_Dataset/data")
 parser.add_argument('--dataset', type=str, default='GOO')
 parser.add_argument('--ckpt_save_dir', type=str, default='./experiments')
 parser.add_argument('--exp_name', type=str, default='train_GOO')
-parser.add_argument('--log_iter', type=int, default=500, help='how often to log loss during training')
+parser.add_argument('--log_iter', type=int, default=1, help='how often to log loss during training')
 parser.add_argument('--max_epochs', type=int, default=15)
 parser.add_argument('--batch_size', type=int, default=60)
 parser.add_argument('--lr', type=float, default=1e-3)
@@ -42,7 +43,7 @@ def main():
     model, transform = get_gazelle_model(args.model)
 
     #depth_model = DepthAnything3.from_pretrained(r"C:\Users\nopol\Documents\GitHub\Gaze-Detection-FYP\models")
-    depth_model = DepthAnything3.from_pretrained("depth-anything/da3metric-large")
+    depth_model = DepthAnything3.from_pretrained("depth-anything/da3-small")
     depth_model = depth_model.to("cuda" if torch.cuda.is_available() else "cpu")
 
     #check to see if cuda available, if not use cpu
@@ -60,7 +61,7 @@ def main():
     eval_dl = torch.utils.data.DataLoader(eval_dataset, batch_size=args.batch_size, shuffle=False, collate_fn=collate_fn, num_workers=args.n_workers)
 
     #loss - start with using BCE as its what GazeLLE uses but can also try change it up and see if other functions are better
-    loss_fn = nn.MSELoss()
+    loss_fn = nn.BCELoss()
 
     #gradient descent
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)

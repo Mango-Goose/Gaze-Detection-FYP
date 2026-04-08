@@ -185,7 +185,7 @@ GOO_Dataset/
 # gazelle/
 experiments/
 venv312/
-Depth-Anything-3/
+#Depth-Anything-3/
 Gaze-Dataset/
 Dataset2.0/
 models/
