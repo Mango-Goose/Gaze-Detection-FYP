@@ -45,7 +45,11 @@ def depth_aware_heatmap(heatmaps, imgs, model):
         depth = results.depth
     
         #resize depth map to be the same as the heatmap
-        depth_tensor = torch.tensor(depth, dtype=torch.float32).unsqueeze(0).unsqueeze(0)
+        depth_tensor = torch.tensor(depth)
+        if depth_tensor.ndim == 3:
+            depth_tensor = depth_tensor.unsqueeze(1)
+        elif depth_tensor.ndim == 2:
+            depth_tensor = depth_tensor.unsqueeze(0).unsqueeze(0)
         resized_depth_map = torch.nn.functional.interpolate(depth_tensor, (64, 64), mode='bilinear', align_corners=False).squeeze()
         depth_aware_heatmaps.append(heatmap * resized_depth_map)
     return torch.stack(depth_aware_heatmaps)
