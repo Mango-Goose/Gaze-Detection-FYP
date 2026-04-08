@@ -33,6 +33,22 @@ args = parser.parse_args()
 
 #code adapted from GazeLLE, specifically the GazeFollow training loop.
 
+def depth_aware_heatmap(heatmaps, imgs, model):
+    depth_aware_heatmaps = []
+    for i in range(heatmaps.shape[0]):
+        heatmap = heatmaps[i]
+        img = imgs[i]
+        #Create depth map using Depth-Anything-3
+        results = model.inference([img])
+        depth = results.depth
+    
+        #resize depth map to be the same as the heatmap
+        depth_tensor = torch.tensor(dtype=torch.float32).unsqueeze(0).unsqueeze(0)
+        resized_depth_map = torch.nn.functional.interpolate(depth_tensor, (64, 64), mode='bilinear', align_corners=False).squeeze()
+        depth_aware_heatmaps.append(heatmap * resized_depth_map)
+    return torch.stack(depth_aware_heatmaps)
+
+
 def main():
     print(f"Starting training for {args.dataset} dataset with args:")
 
@@ -60,7 +76,7 @@ def main():
     eval_dl = torch.utils.data.DataLoader(eval_dataset, batch_size=args.batch_size, shuffle=False, collate_fn=collate_fn, num_workers=args.n_workers)
 
     #loss - start with using BCE as its what GazeLLE uses but can also try change it up and see if other functions are better
-    loss_fn = nn.MSELoss()
+    loss_fn = nn.BCELoss()
 
     #gradient descent
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
@@ -81,6 +97,9 @@ def main():
 
             preds = model({"images": imgs.to(device), "bboxes": [[bbox] for bbox in bboxes]})
             heatmap_preds = torch.stack(preds['heatmap']).squeeze(dim=1)
+
+            with torch.no_grad():
+                heatmaps = depth_aware_heatmap(heatmaps, imgs, depth_model)
 
             loss = loss_fn(heatmap_preds, heatmaps.to(device))
             loss.backward()
