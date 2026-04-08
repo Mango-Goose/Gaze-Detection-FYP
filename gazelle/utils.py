@@ -93,7 +93,7 @@ def random_bbox_jitter(img, bbox):
 
     return bbox
 
-def get_heatmap(gazeimg, gazex, gazey, height, width, sigma=3, htype="Gaussian"):
+def get_heatmap(gazex, gazey, height, width, sigma=3, htype="Gaussian"):
     # Adapted from https://github.com/ejcgt/attention-target-detection/blob/master/utils/imutils.py
 
     img = torch.zeros(height, width)
