@@ -6,6 +6,7 @@ import random
 from datetime import datetime
 import torch
 import torch.nn as nn
+from torchvision.transforms import ToPILImage
 #import wandb - might use weights and biases later, but not curently
 
 # Add parent directory to path to allow imports from gazelle
@@ -38,12 +39,13 @@ def depth_aware_heatmap(heatmaps, imgs, model):
     for i in range(heatmaps.shape[0]):
         heatmap = heatmaps[i]
         img = imgs[i]
+        img = ToPILImage()(img)
         #Create depth map using Depth-Anything-3
         results = model.inference([img])
         depth = results.depth
     
         #resize depth map to be the same as the heatmap
-        depth_tensor = torch.tensor(dtype=torch.float32).unsqueeze(0).unsqueeze(0)
+        depth_tensor = torch.tensor(depth, dtype=torch.float32).unsqueeze(0).unsqueeze(0)
         resized_depth_map = torch.nn.functional.interpolate(depth_tensor, (64, 64), mode='bilinear', align_corners=False).squeeze()
         depth_aware_heatmaps.append(heatmap * resized_depth_map)
     return torch.stack(depth_aware_heatmaps)
@@ -70,9 +72,9 @@ def main():
     print(f"Learnable parameters: {sum(p.numel() for p in model.parameters() if p.requires_grad)}")
 
     #utilises PyTorch Dataloaders
-    train_dataset = GazeDataset('GOO', args.data_path, 'train', transform, model=depth_model)
+    train_dataset = GazeDataset('GOO', args.data_path, 'train', transform)
     train_dl = torch.utils.data.DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, collate_fn=collate_fn, num_workers=args.n_workers)
-    eval_dataset = GazeDataset('GOO', args.data_path, 'test', transform, model=depth_model)
+    eval_dataset = GazeDataset('GOO', args.data_path, 'test', transform)
     eval_dl = torch.utils.data.DataLoader(eval_dataset, batch_size=args.batch_size, shuffle=False, collate_fn=collate_fn, num_workers=args.n_workers)
 
     #loss - start with using BCE as its what GazeLLE uses but can also try change it up and see if other functions are better
