@@ -43,6 +43,8 @@ class GazeDataset(torch.utils.data.dataset.Dataset):
             self.data = load_data_vat(os.path.join(self.path, "{}_preprocessed.json".format(split)), sample_rate=sample_rate)
         elif dataset_name == "GOO":
             self.data = load_data_gazefollow(os.path.join(self.path, "{}_preprocessed.json".format(split)))
+        elif dataset_name == "my":
+            self.data = load_data_gazefollow(os.path.join(self.path, "{}_preprocessed.json".format(split)))
         else:
             raise ValueError("Invalid dataset: {}".format(dataset_name))
 

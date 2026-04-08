@@ -34,8 +34,6 @@ def main(DATA_PATH, IMG_PATH, IMG_NUM):
     head = [float(coord) for coord in head_bboxes]
     cv2.rectangle(image, (int(head[0]),int(head[1])), (int(head[2]), int(head[3])), (0, 0, 255), 1)
 
-    # Add this before the loop to test if drawing works at all
-    #cv2.rectangle(image, (460, 193), (558, 287), (255, 0, 0), 3)  # thick blue box at exact first bbox coords
     cv2.imshow("Image with Head Bounding Box", image)
     cv2.waitKey(0)
 
