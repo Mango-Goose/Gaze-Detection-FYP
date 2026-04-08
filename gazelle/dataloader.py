@@ -28,7 +28,7 @@ def load_data_goo(file):
 #flatten per head - for each image and head, if inout == 1 it adds an index pair to self.data_idxs
 #each dataset element is then one head in one image, not the whole image
 class GazeDataset(torch.utils.data.dataset.Dataset):
-    def __init__(self, dataset_name, path, split, transform, in_frame_only=True, sample_rate=1):
+    def __init__(self, dataset_name, path, split, transform, in_frame_only=True, sample_rate=1, model=None):
         self.dataset_name = dataset_name
         self.path = path
         self.split = split
@@ -36,7 +36,7 @@ class GazeDataset(torch.utils.data.dataset.Dataset):
         self.transform = transform
         self.in_frame_only = in_frame_only
         self.sample_rate = sample_rate
-        
+        self.model = model
         if dataset_name == "gazefollow":
             self.data = load_data_gazefollow(os.path.join(self.path, "{}_preprocessed.json".format(split)))
         elif dataset_name == "videoattentiontarget":
@@ -71,6 +71,7 @@ class GazeDataset(torch.utils.data.dataset.Dataset):
         img = Image.open(img_path)
         img = img.convert("RGB")
         width, height = img.size
+        image = img
 
         if self.aug:
             bbox = head_data['bbox']
@@ -95,7 +96,7 @@ class GazeDataset(torch.utils.data.dataset.Dataset):
             
         #build a 2D heatmap of size 64x64 from normalized gaze point using utils.get_heatmap
         if self.split == "train":
-            heatmap = utils.get_heatmap(gazex_norm[0], gazey_norm[0], 64, 64) # note for training set, there is only one annotation
+            heatmap = utils.get_heatmap(image, gazex_norm[0], gazey_norm[0], 64, 64, model=self.model)
             return img, bbox_norm, gazex_norm, gazey_norm, torch.tensor(inout), height, width, heatmap
         else:
             return img, bbox_norm, gazex_norm, gazey_norm, torch.tensor(inout), height, width

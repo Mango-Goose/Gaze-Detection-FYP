@@ -12,7 +12,9 @@ import torch.nn as nn
 
 from gazelle.dataloader import GazeDataset, collate_fn
 from gazelle.model import get_gazelle_model
-from gazelle.utils import gazefollow_auc, gazefollow_l2
+from gazelle.utils import gazefollow_auc, gazefollow_l2, get_heatmap
+
+from depth_anything_3.api import DepthAnything3
 
 parser = argparse.ArgumentParser()
 
@@ -39,6 +41,10 @@ def main():
 
     model, transform = get_gazelle_model(args.model)
 
+    #depth_model = DepthAnything3.from_pretrained(r"C:\Users\nopol\Documents\GitHub\Gaze-Detection-FYP\models")
+    depth_model = DepthAnything3.from_pretrained("depth-anything/da3metric-large")
+    depth_model = depth_model.to("cuda" if torch.cuda.is_available() else "cpu")
+
     #check to see if cuda available, if not use cpu
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model.to(device)
@@ -48,9 +54,9 @@ def main():
     print(f"Learnable parameters: {sum(p.numel() for p in model.parameters() if p.requires_grad)}")
 
     #utilises PyTorch Dataloaders
-    train_dataset = GazeDataset('GOO', args.data_path, 'train', transform)
+    train_dataset = GazeDataset('GOO', args.data_path, 'train', transform, model=depth_model)
     train_dl = torch.utils.data.DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, collate_fn=collate_fn, num_workers=args.n_workers)
-    eval_dataset = GazeDataset('GOO', args.data_path, 'test', transform)
+    eval_dataset = GazeDataset('GOO', args.data_path, 'test', transform, model=depth_model)
     eval_dl = torch.utils.data.DataLoader(eval_dataset, batch_size=args.batch_size, shuffle=False, collate_fn=collate_fn, num_workers=args.n_workers)
 
     #loss - start with using BCE as its what GazeLLE uses but can also try change it up and see if other functions are better
