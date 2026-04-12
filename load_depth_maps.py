@@ -6,7 +6,7 @@ import argparse
 from depth_anything_3.api import DepthAnything3
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--data_path', type=str, default="./GOO_Dataset/images/test")
+parser.add_argument('--data_path', type=str, default="./GOO_Dataset/images/train")
 parser.add_argument('--save_path', type=str, default="./GOO_Dataset/data")
 
 args = parser.parse_args()
@@ -34,8 +34,8 @@ def main(data_path, save_path):
         maps.append(resized_depth_map.cpu().numpy())
         print("Processed image {}/{}".format(i+1, len(os.listdir(data_path))))
      
-    np.savez(os.path.join(save_path, "test_depth_maps.npz"), depth_maps=np.stack(maps))
-    print("Saved depth maps to {}".format(os.path.join(save_path, "test_depth_maps.npz")))
+    np.savez(os.path.join(save_path, "train_depth_maps.npz"), depth_maps=np.stack(maps))
+    print("Saved depth maps to {}".format(os.path.join(save_path, "train_depth_maps.npz")))
 
 if __name__ == "__main__":
     main(args.data_path, args.save_path)
