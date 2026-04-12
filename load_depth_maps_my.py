@@ -6,19 +6,22 @@ import argparse
 from depth_anything_3.api import DepthAnything3
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--data_path', type=str, default="./GOO_Dataset/images/test")
-parser.add_argument('--save_path', type=str, default="./GOO_Dataset/data")
+parser.add_argument('--data_path', type=str, default="./Dataset2.0/images")
+parser.add_argument('--save_path', type=str, default="./Dataset2.0")
 
 args = parser.parse_args()
 
 def main(data_path, save_path):
     #load depth model
-    depth_model = DepthAnything3.from_pretrained("depth-anything/da3-giant")
+    depth_model = DepthAnything3.from_pretrained("depth-anything/da3-small")
     depth_model = depth_model.to("cuda" if torch.cuda.is_available() else "cpu")
 
     maps = []
-    for i, img_name in enumerate(os.listdir(data_path)):
-        img_path = os.path.join(data_path, str(i) + ".png")
+    for i in range(len(os.listdir(data_path)) ):
+        img_name = str(i) + ".png"
+        #if ".meta" in img_name:
+            #continue
+        img_path = os.path.join(data_path, img_name)
         print(img_path)
         img = Image.open(img_path).convert("RGB")
         results = depth_model.inference([img])
@@ -34,7 +37,7 @@ def main(data_path, save_path):
         maps.append(resized_depth_map.cpu().numpy())
         print("Processed image {}/{}".format(i+1, len(os.listdir(data_path))))
      
-    np.savez(os.path.join(save_path, "test_depth_maps.npz"), depth_maps=np.stack(maps))
+    np.savez(os.path.join(save_path, "depth_maps.npz"), depth_maps=np.stack(maps))
     print("Saved depth maps to {}".format(os.path.join(save_path, "test_depth_maps.npz")))
 
 if __name__ == "__main__":

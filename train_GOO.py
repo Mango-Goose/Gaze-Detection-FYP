@@ -1,6 +1,7 @@
 import argparse
 import numpy as np
 import os
+#os.environ["XFORMERS_DISABLED"] = "1"
 import sys
 import random
 from datetime import datetime
@@ -15,7 +16,7 @@ from gazelle.dataloader import GazeDataset, collate_fn
 from gazelle.model import get_gazelle_model
 from gazelle.utils import gazefollow_auc, gazefollow_l2, get_heatmap
 
-from depth_anything_3.api import DepthAnything3
+#from depth_anything_3.api import DepthAnything3
 
 parser = argparse.ArgumentParser()
 
@@ -25,7 +26,7 @@ parser.add_argument('--data_path', type=str, default="./GOO_Dataset/data")
 parser.add_argument('--dataset', type=str, default='GOO')
 parser.add_argument('--ckpt_save_dir', type=str, default='./experiments')
 parser.add_argument('--exp_name', type=str, default='train_GOO')
-parser.add_argument('--log_iter', type=int, default=500, help='how often to log loss during training')
+parser.add_argument('--log_iter', type=int, default=1, help='how often to log loss during training')
 parser.add_argument('--max_epochs', type=int, default=15)
 parser.add_argument('--batch_size', type=int, default=60)
 parser.add_argument('--lr', type=float, default=1e-3)
@@ -34,30 +35,30 @@ args = parser.parse_args()
 
 #code adapted from GazeLLE, specifically the GazeFollow training loop.
 
-def depth_aware_heatmap(heatmaps, imgs, model):
-    depth_aware_heatmaps = []
-    for i in range(heatmaps.shape[0]):
-        heatmap = heatmaps[i]
-        img = imgs[i]
-        img = ToPILImage()(img)
+#def depth_aware_heatmap(heatmaps, imgs, model):
+    #depth_aware_heatmaps = []
+    #for i in range(heatmaps.shape[0]):
+       # heatmap = heatmaps[i]
+        #img = imgs[i]
+        #img = ToPILImage()(img)
         #Create depth map using Depth-Anything-3
-        results = model.inference([img])
-        depth = results.depth
+        #results = model.inference([img])
+        #depth = results.depth
     
         #resize depth map to be the same as the heatmap
-        depth_tensor = torch.tensor(depth)
-        if depth_tensor.ndim == 3:
-            depth_tensor = depth_tensor.unsqueeze(1)
-        elif depth_tensor.ndim == 2:
-            depth_tensor = depth_tensor.unsqueeze(0).unsqueeze(0)
-        resized_depth_map = torch.nn.functional.interpolate(depth_tensor, (64, 64), mode='bilinear', align_corners=False).squeeze()
+        #depth_tensor = torch.tensor(depth)
+        #if depth_tensor.ndim == 3:
+            #depth_tensor = depth_tensor.unsqueeze(1)
+        #elif depth_tensor.ndim == 2:
+       #     depth_tensor = depth_tensor.unsqueeze(0).unsqueeze(0)
+        #resized_depth_map = torch.nn.functional.interpolate(depth_tensor, (64, 64), mode='bilinear', align_corners=False).squeeze()
         
-        resized_depth_map = resized_depth_map / resized_depth_map.max() 
-        depthmap = heatmap * resized_depth_map 
-        depthmap = torch.clamp(depthmap, 0, 1) 
+        #resized_depth_map = resized_depth_map / resized_depth_map.max() 
+       # depthmap = heatmap * resized_depth_map 
+        #depthmap = torch.clamp(depthmap, 0, 1) 
 
-        depth_aware_heatmaps.append(depthmap)
-    return torch.stack(depth_aware_heatmaps)
+        #depth_aware_heatmaps.append(depthmap)
+    #return torch.stack(depth_aware_heatmaps)
 
 
 def main():
@@ -68,13 +69,12 @@ def main():
 
     model, transform = get_gazelle_model(args.model)
 
-    #depth_model = DepthAnything3.from_pretrained(r"C:\Users\nopol\Documents\GitHub\Gaze-Detection-FYP\models")
-    depth_model = DepthAnything3.from_pretrained("depth-anything/da3metric-large")
-    depth_model = depth_model.to("cuda" if torch.cuda.is_available() else "cpu")
-
     #check to see if cuda available, if not use cpu
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model.to(device)
+
+    #depth_model = DepthAnything3.from_pretrained("depth-anything/da3-small")
+    #depth_model = depth_model.to("cuda" if torch.cuda.is_available() else "cpu")
     
     for param in model.backbone.parameters(): # freeze backbone
         param.requires_grad = False
@@ -82,9 +82,9 @@ def main():
 
     #utilises PyTorch Dataloaders
     train_dataset = GazeDataset('GOO', args.data_path, 'train', transform)
-    train_dl = torch.utils.data.DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, collate_fn=collate_fn, num_workers=args.n_workers)
+    train_dl = torch.utils.data.DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, collate_fn=collate_fn, num_workers=0)
     eval_dataset = GazeDataset('GOO', args.data_path, 'test', transform)
-    eval_dl = torch.utils.data.DataLoader(eval_dataset, batch_size=args.batch_size, shuffle=False, collate_fn=collate_fn, num_workers=args.n_workers)
+    eval_dl = torch.utils.data.DataLoader(eval_dataset, batch_size=args.batch_size, shuffle=False, collate_fn=collate_fn, num_workers=0)
 
     #loss - start with using BCE as its what GazeLLE uses but can also try change it up and see if other functions are better
     loss_fn = nn.BCELoss()
@@ -104,13 +104,14 @@ def main():
         for cur_iter, batch in enumerate(train_dl):
             imgs, bboxes, gazex, gazey, inout, heights, widths, heatmaps = batch
 
+            #with torch.no_grad():
+               # heatmaps = depth_aware_heatmap(heatmaps, imgs, depth_model)
+
             optimizer.zero_grad()
 
             preds = model({"images": imgs.to(device), "bboxes": [[bbox] for bbox in bboxes]})
             heatmap_preds = torch.stack(preds['heatmap']).squeeze(dim=1)
 
-            with torch.no_grad():
-                heatmaps = depth_aware_heatmap(heatmaps, imgs, depth_model)
 
             loss = loss_fn(heatmap_preds, heatmaps.to(device))
             loss.backward()

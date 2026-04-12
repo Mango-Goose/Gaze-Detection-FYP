@@ -1,7 +1,7 @@
 import argparse
 import os
 import cv2
-
+os.environ["XFORMERS_DISABLED"] = "1"
 import torch
 import numpy as np
 import glob
@@ -10,8 +10,8 @@ from PIL import Image
 from depth_anything_3.api import DepthAnything3
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--data_path', type=str, default="./Dataset2.0/images/")
-parser.add_argument('--image_num', type=str, default="1100")
+parser.add_argument('--data_path', type=str, default="./GOO_Dataset/images/test")
+parser.add_argument('--image_num', type=str, default="80")
 parser.add_argument('--output_path', type=str, default="./depth_maps/depth_output_anything_1.png")
 args = parser.parse_args()
 
@@ -22,7 +22,7 @@ def main(DATA_PATH, IMG):
     img = img.convert('RGB') 
 
     #depth_estimator  = pipeline(task="depth-estimation", model="LiheYoung/depth-anything-base-hf")
-    model = DepthAnything3.from_pretrained("depth-anything/da3metric-large")
+    model = DepthAnything3.from_pretrained("depth-anything/da3-giant")
     model = model.to("cuda" if torch.cuda.is_available() else "cpu")
 
 

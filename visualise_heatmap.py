@@ -8,24 +8,28 @@ import torch
 import torchvision.transforms.functional as TF
 from PIL import Image
 from gazelle.utils import get_heatmap
-from depth_anything_3.api import DepthAnything3
+#from depth_anything_3.api import DepthAnything3
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--image_num", type=int, default=531)
-parser.add_argument("--image_path", type=str, default="./Dataset2.0/images")
-parser.add_argument("--data_path", type=str, default="./Dataset2.0/test_preprocessed.json")
+parser.add_argument("--image_num", type=int, default=80)
+parser.add_argument("--image_path", type=str, default="./GOO_Dataset/images/test")
+parser.add_argument("--data_path", type=str, default="./GOO_Dataset/data/test_preprocessed.json")
+parser.add_argument("--depth_path", type=str, default="./GOO_Dataset/data/test_depth_maps.npz")
 args = parser.parse_args()
 
-def main(IMG_NUM, IMG_PATH, DATA_PATH):
+def main(IMG_NUM, IMG_PATH, DATA_PATH, DEPTH_PATH):
     # Initialize depth model
-    depth_model = DepthAnything3.from_pretrained("depth-anything/da3metric-large")
-    depth_model = depth_model.to("cuda" if torch.cuda.is_available() else "cpu")
+    #depth_model = DepthAnything3.from_pretrained("depth-anything/da3metric-large")
+    #depth_model = depth_model.to("cuda" if torch.cuda.is_available() else "cpu")
     
     dataset = json.load(open(DATA_PATH, "r"))
     image = cv2.imread(os.path.join(IMG_PATH, f"{int(IMG_NUM)}.png"))
+    depth_maps = np.load(os.path.join(DEPTH_PATH))['depth_maps']
+
+    depth = depth_maps[IMG_NUM]
 
     img_height, img_width = image.shape[:2]
-    heatmap = get_heatmap(image, dataset[int(IMG_NUM)]['heads'][0]['gazex_norm'][0], dataset[int(IMG_NUM)]['heads'][0]['gazey_norm'][0], 64, 64, model=depth_model)
+    heatmap = get_heatmap(depth, dataset[int(IMG_NUM)]['heads'][0]['gazex_norm'][0], dataset[int(IMG_NUM)]['heads'][0]['gazey_norm'][0], 64, 64)
     
     img = TF.to_pil_image(image)
     h_img = TF.to_pil_image(heatmap)
@@ -45,4 +49,4 @@ def main(IMG_NUM, IMG_PATH, DATA_PATH):
     plt.show()
 
 if __name__ == "__main__":
-    main(args.image_num, args.image_path, args.data_path)
+    main(args.image_num, args.image_path, args.data_path, args.depth_path)

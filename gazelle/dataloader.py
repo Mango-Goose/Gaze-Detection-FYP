@@ -20,9 +20,6 @@ def load_data_gazefollow(file):
     data = json.load(open(file, "r"))
     return data
 
-def load_data_goo(file):
-    data = json.load(open(file, "r"))
-    return data
 
 #reads JSON
 #flatten per head - for each image and head, if inout == 1 it adds an index pair to self.data_idxs
@@ -37,6 +34,8 @@ class GazeDataset(torch.utils.data.dataset.Dataset):
         self.in_frame_only = in_frame_only
         self.sample_rate = sample_rate
         
+        self.depth_maps = np.load(os.path.join(self.path, "{}_depth_maps.npz".format(split)))['depth_maps']
+
         if dataset_name == "gazefollow":
             self.data = load_data_gazefollow(os.path.join(self.path, "{}_preprocessed.json".format(split)))
         elif dataset_name == "videoattentiontarget":
@@ -72,6 +71,9 @@ class GazeDataset(torch.utils.data.dataset.Dataset):
         img = img.convert("RGB")
         width, height = img.size
 
+        # Load depth map from NPZ array
+        depth = self.depth_maps[img_idx]
+
         if self.aug:
             bbox = head_data['bbox']
             gazex = head_data['gazex']
@@ -95,7 +97,7 @@ class GazeDataset(torch.utils.data.dataset.Dataset):
             
         #build a 2D heatmap of size 64x64 from normalized gaze point using utils.get_heatmap
         if self.split == "train":
-            heatmap = utils.get_heatmap(gazex_norm[0], gazey_norm[0], 64, 64) # note for training set, there is only one annotation
+            heatmap = utils.get_heatmap(depth, gazex_norm[0], gazey_norm[0], 64, 64) # note for training set, there is only one annotation
             return img, bbox_norm, gazex_norm, gazey_norm, torch.tensor(inout), height, width, heatmap
         else:
             return img, bbox_norm, gazex_norm, gazey_norm, torch.tensor(inout), height, width
