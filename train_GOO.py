@@ -1,16 +1,13 @@
 import argparse
 import numpy as np
 import os
-#os.environ["XFORMERS_DISABLED"] = "1"
 import sys
 import random
 from datetime import datetime
 import torch
 import torch.nn as nn
 from torchvision.transforms import ToPILImage
-#import wandb - might use weights and biases later, but not curently
 
-# Add parent directory to path to allow imports from gazelle
 
 from gazelle.dataloader import GazeDataset, collate_fn
 from gazelle.model import get_gazelle_model
@@ -47,9 +44,6 @@ def main():
     #check to see if cuda available, if not use cpu
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model.to(device)
-
-    #depth_model = DepthAnything3.from_pretrained("depth-anything/da3-small")
-    #depth_model = depth_model.to("cuda" if torch.cuda.is_available() else "cpu")
     
     for param in model.backbone.parameters(): # freeze backbone
         param.requires_grad = False
@@ -57,9 +51,9 @@ def main():
 
     #utilises PyTorch Dataloaders
     train_dataset = GazeDataset('GOO', args.data_path, 'train', transform)
-    train_dl = torch.utils.data.DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, collate_fn=collate_fn, num_workers=0)
+    train_dl = torch.utils.data.DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, collate_fn=collate_fn, num_workers=args.n_workers)
     eval_dataset = GazeDataset('GOO', args.data_path, 'test', transform)
-    eval_dl = torch.utils.data.DataLoader(eval_dataset, batch_size=args.batch_size, shuffle=False, collate_fn=collate_fn, num_workers=0)
+    eval_dl = torch.utils.data.DataLoader(eval_dataset, batch_size=args.batch_size, shuffle=False, collate_fn=collate_fn, num_workers=args.n_workers)
 
     #loss - start with using BCE as its what GazeLLE uses but can also try change it up and see if other functions are better
     loss_fn = nn.BCELoss()

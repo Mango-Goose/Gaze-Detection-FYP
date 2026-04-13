@@ -8,7 +8,7 @@ import json
 parser = argparse.ArgumentParser()
 parser.add_argument("--data_path", type=str, default="./Dataset2.0/data.json")
 parser.add_argument("--img_path", type=str, default="./Dataset2.0/images/")
-parser.add_argument("--image_num", type=str, default="1100")
+parser.add_argument("--image_num", type=str, default="679")
 args = parser.parse_args()
 
 
