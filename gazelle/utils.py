@@ -95,7 +95,14 @@ def random_bbox_jitter(img, bbox):
 def get_heatmap(depth_map, gazex, gazey, height, width, sigma=3, htype="Gaussian"):
     # Adapted from https://github.com/ejcgt/attention-target-detection/blob/master/utils/imutils.py
 
+    depth_decay = 0.02
+    blend_weight = 0.5
+
     img = torch.zeros(height, width)
+    # Convert depth_map to tensor if it's numpy array
+    if isinstance(depth_map, np.ndarray):
+        depth_map = torch.from_numpy(depth_map).float()
+    
     if gazex < 0 or gazey < 0:  # return empty map if out of frame
         return img
     gazex = int(gazex * width)
@@ -127,8 +134,28 @@ def get_heatmap(depth_map, gazex, gazey, height, width, sigma=3, htype="Gaussian
     img_y = max(0, ul[1]), min(br[1], img.shape[0])
 
     img[img_y[0] : img_y[1], img_x[0] : img_x[1]] += g[g_y[0] : g_y[1], g_x[0] : g_x[1]]
-    img = img * depth_map  #Multiply heatmap by depth map to get depth-aware heatmap
-    img = img / img.max()  # normalize heatmap so it has max value of 1
+    depth_map = 1.0/ (1.0 + depth_map) #normalise and invert so that closer points have higher values
+    gaussian = img.clone()
+    
+    
+    gaze_depth = depth_map[
+        min(gazey, depth_map.shape[0] - 1),
+        min(gazex, depth_map.shape[1] - 1)
+    ]
+
+    depth_diff = (depth_map - gaze_depth) / (depth_map.max() + 1e-6) #differnce between depth and gaze depth, and normalised
+    depth_weight = torch.exp(-(depth_diff ** 2) / (2 * depth_decay ** 2)) #convert depth difference to weight - similar depth points to gaze point have higher weight
+
+    #Add depth to the area of the gaussian blur
+    mask = gaussian > 0
+    mask_img = gaussian.clone() 
+    mask_img[mask] = gaussian[mask] * depth_weight[mask] # depth map in gaussian area
+    
+    #Blend guassian with depth map
+    img = (1 - blend_weight) * gaussian + blend_weight * mask_img
+
+    if img.max() > 0:
+        img = img / img.max()
 
     return img
 

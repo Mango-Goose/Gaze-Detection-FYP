@@ -26,7 +26,7 @@ parser.add_argument('--data_path', type=str, default="./GOO_Dataset/data")
 parser.add_argument('--dataset', type=str, default='GOO')
 parser.add_argument('--ckpt_save_dir', type=str, default='./experiments')
 parser.add_argument('--exp_name', type=str, default='train_GOO')
-parser.add_argument('--log_iter', type=int, default=1, help='how often to log loss during training')
+parser.add_argument('--log_iter', type=int, default=500, help='how often to log loss during training')
 parser.add_argument('--max_epochs', type=int, default=15)
 parser.add_argument('--batch_size', type=int, default=60)
 parser.add_argument('--lr', type=float, default=1e-3)
@@ -34,31 +34,6 @@ parser.add_argument('--n_workers', type=int, default=3)
 args = parser.parse_args()
 
 #code adapted from GazeLLE, specifically the GazeFollow training loop.
-
-#def depth_aware_heatmap(heatmaps, imgs, model):
-    #depth_aware_heatmaps = []
-    #for i in range(heatmaps.shape[0]):
-       # heatmap = heatmaps[i]
-        #img = imgs[i]
-        #img = ToPILImage()(img)
-        #Create depth map using Depth-Anything-3
-        #results = model.inference([img])
-        #depth = results.depth
-    
-        #resize depth map to be the same as the heatmap
-        #depth_tensor = torch.tensor(depth)
-        #if depth_tensor.ndim == 3:
-            #depth_tensor = depth_tensor.unsqueeze(1)
-        #elif depth_tensor.ndim == 2:
-       #     depth_tensor = depth_tensor.unsqueeze(0).unsqueeze(0)
-        #resized_depth_map = torch.nn.functional.interpolate(depth_tensor, (64, 64), mode='bilinear', align_corners=False).squeeze()
-        
-        #resized_depth_map = resized_depth_map / resized_depth_map.max() 
-       # depthmap = heatmap * resized_depth_map 
-        #depthmap = torch.clamp(depthmap, 0, 1) 
-
-        #depth_aware_heatmaps.append(depthmap)
-    #return torch.stack(depth_aware_heatmaps)
 
 
 def main():
@@ -104,8 +79,6 @@ def main():
         for cur_iter, batch in enumerate(train_dl):
             imgs, bboxes, gazex, gazey, inout, heights, widths, heatmaps = batch
 
-            #with torch.no_grad():
-               # heatmaps = depth_aware_heatmap(heatmaps, imgs, depth_model)
 
             optimizer.zero_grad()
 

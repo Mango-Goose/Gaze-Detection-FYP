@@ -17,7 +17,7 @@ def main(data_path, save_path):
     depth_model = depth_model.to("cuda" if torch.cuda.is_available() else "cpu")
 
     maps = []
-    for i in range(len(os.listdir(data_path)) ):
+    for i in range(len(os.listdir(data_path)) // 2):
         img_name = str(i) + ".png"
         #if ".meta" in img_name:
             #continue
