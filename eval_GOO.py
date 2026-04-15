@@ -11,9 +11,9 @@ from gazelle.utils import gazefollow_auc, gazefollow_l2
 from gazelle.dataloader import GazeDataset, collate_fn
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--data_path", type=str, default="./Dataset2.0")
+parser.add_argument("--data_path", type=str, default="./Gaze-Dataset")
 parser.add_argument("--model", type=str, default="gazelle_dinov2_vitb14")
-parser.add_argument("--checkpoint", type=str, default="./experiments/train_my/2026-03-28_16-48-47/epoch_14.pt")
+parser.add_argument("--checkpoint", type=str, default="./experiments/train_my/2026-04-13_16-04-31/epoch_13.pt")
 parser.add_argument("--batch_size", type=int, default=60)
 args = parser.parse_args()
 
@@ -31,7 +31,6 @@ def main():
 
     model.eval()
     avg_l2s = []
-    min_l2s = []
     aucs = []
 
     for cur_iter, batch in enumerate(eval_dl):
@@ -47,15 +46,13 @@ def main():
             avg_l2, min_l2 = gazefollow_l2(heatmap_preds[i], gazex[i], gazey[i])
             aucs.append(auc)
             avg_l2s.append(avg_l2)
-            min_l2s.append(min_l2)
 
         #average metrics
     epoch_avg_l2 = np.mean(avg_l2s)
-    epoch_min_l2 = np.mean(min_l2s)
     epoch_auc = np.mean(aucs)
 
         #print
-    print(" AUC={}, Min L2={}, Avg L2={}".format( round(epoch_auc, 4), round(epoch_min_l2, 4), round(epoch_avg_l2, 4)))
+    print(" AUC={}, Avg L2={}".format( round(epoch_auc, 4), round(epoch_avg_l2, 4)))
 
 
 if __name__ == "__main__":
