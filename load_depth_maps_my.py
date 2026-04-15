@@ -6,8 +6,8 @@ import argparse
 from depth_anything_3.api import DepthAnything3
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--data_path', type=str, default="./Dataset2.0/images")
-parser.add_argument('--save_path', type=str, default="./Dataset2.0")
+parser.add_argument('--data_path', type=str, default="./Gaze-Dataset/images")
+parser.add_argument('--save_path', type=str, default="./Gaze-Dataset")
 
 args = parser.parse_args()
 
