@@ -13,7 +13,7 @@ args = parser.parse_args()
 
 def main(data_path, save_path):
     #load depth model
-    depth_model = DepthAnything3.from_pretrained("depth-anything/da3-small")
+    depth_model = DepthAnything3.from_pretrained("depth-anything/da3-giant")
     depth_model = depth_model.to("cuda" if torch.cuda.is_available() else "cpu")
 
     maps = []
