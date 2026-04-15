@@ -35,7 +35,7 @@ def main(data_path, save_path):
         resized_depth_map = torch.nn.functional.interpolate(depth_tensor, (64, 64), mode='bilinear', align_corners=False).squeeze()
         
         maps.append(resized_depth_map.cpu().numpy())
-        print("Processed image {}/{}".format(i+1, len(os.listdir(data_path))))
+        print("Processed image {}/{}".format(i+1, len(os.listdir(data_path)) // 2))
      
     np.savez(os.path.join(save_path, "depth_maps.npz"), depth_maps=np.stack(maps))
     print("Saved depth maps to {}".format(os.path.join(save_path, "test_depth_maps.npz")))
