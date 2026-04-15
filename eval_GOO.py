@@ -13,7 +13,7 @@ from gazelle.dataloader import GazeDataset, collate_fn
 parser = argparse.ArgumentParser()
 parser.add_argument("--data_path", type=str, default="./Gaze-Dataset")
 parser.add_argument("--model", type=str, default="gazelle_dinov2_vitb14")
-parser.add_argument("--checkpoint", type=str, default="./experiments/train_my/2026-04-13_16-04-31/epoch_13.pt")
+parser.add_argument("--checkpoint", type=str, default="./experiments/train_GOO/2026-04-13_16-04-31/epoch_13.pt")
 parser.add_argument("--batch_size", type=int, default=60)
 args = parser.parse_args()
 
