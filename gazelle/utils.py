@@ -8,8 +8,7 @@ import random
 from sklearn.metrics import roc_auc_score
 
 
-#import requests
-#from transformers import AutoImageProcessor, AutoModelForDepthEstimation
+#Adapted from Ryan et al's GazeLLE: https://github.com/fkryan/gazelle/blob/main/gazelle/utils.py 
 
 def repeat_tensors(tensor, repeat_counts):
     repeated_tensors = [tensor[i:i+1].repeat(repeat, *[1] * (tensor.ndim - 1)) for i, repeat in enumerate(repeat_counts)]

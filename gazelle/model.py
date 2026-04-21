@@ -7,6 +7,7 @@ import math
 import gazelle.utils as utils
 from gazelle.backbone import DinoV2Backbone
 
+# Code from Ryan et al's GazeLLE: https://github.com/fkryan/gazelle/blob/main/gazelle/model.py 
 
 class GazeLLE(nn.Module):
     #initialising values

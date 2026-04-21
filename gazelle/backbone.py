@@ -3,6 +3,8 @@ import torch
 import torch.nn as nn
 import torchvision.transforms as transforms
 
+#Code from Ryan et al's GazeLLE: https://github.com/fkryan/gazelle/blob/main/gazelle/backbone.py 
+
 # Abstract Backbone class
 class Backbone(nn.Module, ABC):
     def __init__(self):

@@ -30,7 +30,7 @@ parser.add_argument('--lr', type=float, default=1e-3)
 parser.add_argument('--n_workers', type=int, default=3)
 args = parser.parse_args()
 
-#code adapted from GazeLLE, specifically the GazeFollow training loop.
+#Code adapted from Ryan et al's GazeLLE: https://github.com/fkryan/gazelle/blob/main/scripts/train_gazefollow.py
 
 
 def main():
@@ -122,7 +122,7 @@ def main():
         epoch_auc = np.mean(aucs)
 
         #print
-        print("EVAL EPOCH {}: AUC={}, Min L2={}, Avg L2={}".format(epoch, round(epoch_auc, 4), round(epoch_min_l2, 4), round(epoch_avg_l2, 4)))
+        print("EVAL EPOCH {}: AUC={}, Avg L2={}".format(epoch, round(epoch_auc, 4), round(epoch_avg_l2, 4)))
 
         if epoch_min_l2 < best_min_l2:
             best_min_l2 = epoch_min_l2

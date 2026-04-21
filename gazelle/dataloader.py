@@ -7,6 +7,8 @@ import numpy as np
 
 import gazelle.utils as utils
 
+# Code adapted from Ryan et al's GazeLLE: https://github.com/fkryan/gazelle/blob/main/gazelle/dataloader.py
+
 def load_data_vat(file, sample_rate):
     sequences = json.load(open(file, "r"))
     data = []
