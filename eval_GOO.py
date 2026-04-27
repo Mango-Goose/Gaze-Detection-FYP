@@ -19,7 +19,6 @@ parser.add_argument("--checkpoint", type=str, default="./experiments/train_GOO/2
 parser.add_argument("--batch_size", type=int, default=60)
 args = parser.parse_args()
 
-#Evaluation loop adapted from GazeLLE, specifically the GazeFollow evaluation loop.
 
 def main():
     device = "cuda" if torch.cuda.is_available() else "cpu"
