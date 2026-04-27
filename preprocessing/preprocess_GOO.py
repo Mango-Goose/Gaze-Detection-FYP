@@ -16,7 +16,7 @@ args = parser.parse_args()
 #Pitch, Yaw and Roll are rotation angles (roll ear to shoulder, yaw shake head no, pitch nod yes) 
 
 #JSON only really needs to contain the head bbox and gaze target coordinates (including inout), as well as the path to the image.
-
+# Inspired by Ryan et al.'s GazeLLE: https://github.com/fkryan/gazelle/tree/main/data_prep 
 
 def main(DATA_PATH, IMG_PATH):
 
