@@ -16,7 +16,7 @@ args = parser.parse_args()
 def main(DATA_PATH, IMG):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    # Load MiDaS model and transforms
+    # load MIDAS
     model = torch.hub.load("intel-isl/MiDaS", "DPT_Hybrid")
     model.to(device)
     model.eval()
@@ -29,15 +29,14 @@ def main(DATA_PATH, IMG):
     if img is None:
         raise FileNotFoundError(f"Image not found: {img_path}")
 
-    # MiDaS expects RGB images
     img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
-    # Preprocess and run inference
+    # Get depth map
     input_tensor = transform(img_rgb).to(device)
     with torch.no_grad():
         prediction = model(input_tensor)
 
-    # Resize to original size and return as numpy array
+    # Resize and return as numpy array
     prediction = F.interpolate(
         prediction.unsqueeze(1),
         size=img_rgb.shape[:2],
@@ -47,13 +46,13 @@ def main(DATA_PATH, IMG):
 
     print("depth map shape:", prediction.shape)
 
-    # Normalize depth map to 0-255 for visualization
+    # Normalise
     depth_min = prediction.min()
     depth_max = prediction.max()
     depth_normalized = (prediction - depth_min) / (depth_max - depth_min) * 255.0
     depth_normalized = depth_normalized.astype(np.uint8)
 
-    # Save depth map as image
+    # Save result
     cv2.imwrite(args.output_path, depth_normalized)
     print(f"Depth map saved to: {args.output_path}")
 

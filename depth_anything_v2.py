@@ -7,9 +7,9 @@ import requests
 from transformers import AutoImageProcessor, AutoModelForDepthEstimation
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--data_path', type=str, default="./Dataset2.0/images/")
-parser.add_argument('--image_num', type=str, default="19")
-parser.add_argument('--output_path', type=str, default="./depth_maps/depth_output_anything_2.png")
+parser.add_argument('--data_path', type=str, default="./GOO_Dataset/images/test/")
+parser.add_argument('--image_num', type=str, default="6")
+parser.add_argument('--output_path', type=str, default="./depth_maps/depth_output_anything_4.png")
 args = parser.parse_args()
 
 
@@ -18,8 +18,8 @@ def main(DATA_PATH, IMG):
     img = Image.open(img_path)
     img = img.convert('RGB')  # Convert to RGB if it's RGBA or other format
 
-    image_processor = AutoImageProcessor.from_pretrained("depth-anything/Depth-Anything-V2-Small-hf")
-    model = AutoModelForDepthEstimation.from_pretrained("depth-anything/Depth-Anything-V2-Small-hf")
+    image_processor = AutoImageProcessor.from_pretrained("depth-anything/Depth-Anything-V2-Large-hf")
+    model = AutoModelForDepthEstimation.from_pretrained("depth-anything/Depth-Anything-V2-Large-hf")
 
     inputs = image_processor(images=img, return_tensors="pt")
     with torch.no_grad():
