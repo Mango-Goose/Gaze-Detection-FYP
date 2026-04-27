@@ -8,6 +8,8 @@ parser.add_argument("--data_path", type=str, default="../Dataset2.0")
 parser.add_argument("--img_path", type=str, default="../Dataset2.0/images")
 args = parser.parse_args()
 
+# Inspired by Ryan et al.'s GazeLLE: https://github.com/fkryan/gazelle/tree/main/data_prep
+
 def main(DATA_PATH, IMG_PATH):
     data = json.load(open(os.path.join(DATA_PATH, "data.json"), "r"))
 
